@@ -6,8 +6,7 @@ const friendController = {
     try {
       const friends1 = await Friend.findAll({userId1: req.user.id});
       const friends2 = await Friend.findAll({userId2: req.user.id});
-      
-      console.log(friends1)
+    
       const friends = [...friends1, ...friends2];
       
       res.json(friends);

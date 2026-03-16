@@ -1,8 +1,11 @@
+require('dotenv').config();
+
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const algorithm = 'aes-256-cbc';
-const key = 'kriptografiSangatlahMenyenangkan';
-// const iv = Buffer.from('1234567890123456', 'utf-8'); 
-const iv = crypto.randomBytes(16);
+const key = process.env.AES_KEY;
+const iv = Buffer.from(process.env.AES_IV, 'utf-8'); 
 
 // Hash MD5
 const hashEmail = (email) => {
@@ -15,18 +18,16 @@ const hashPassword = (password) => {
 }
 
 // Enkripsi AES
-const encryptFullName = (text) =>{
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+const encryptAES = (text) =>{
+  const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
   let encrypted = cipher.update(text, 'utf-8', 'hex');
   encrypted += cipher.final('hex');
-  console.log(encrypted);
-  console.log(encrypted);
   return encrypted;
 } 
 
 // Dekripsi AES
-const decryptFullName = (encryptedText) =>{
-  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+const decryptAES = (encryptedText) =>{
+  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
   let decrypted = decipher.update(encryptedText, 'hex', 'utf-8');
   decrypted += decipher.final('utf-8');
   return decrypted;
@@ -50,7 +51,7 @@ const caesarCipher = (str, shift, decrypt = false) => {
 
 // supeer eknripsi
 const superEnkripsi = (str, shift, decrypt = false) =>{
-  let chiperText = encryptFullName(str);
+  let chiperText = encryptAES(str);
   chiperText = caesarCipher(chiperText, shift, decrypt);
   return chiperText;
 }
@@ -58,39 +59,36 @@ const superEnkripsi = (str, shift, decrypt = false) =>{
 // supeer dekripsi
 const superDekripsi = (str, shift, decrypt = false) =>{
   str = caesarCipher(str, shift, decrypt);
-  const plainText = decryptFullName(str);
+  const plainText = decryptAES(str);
   return plainText;
 }
 
-// ENKRIPSI GAMBAR
-function encryptImage() {
-  var img = document.getElementById("img"),
-      cover = document.getElementById("cover"),
-      textarea = document.getElementById("text"),
-      download = document.getElementById("download");
-  if(img && textarea) {
-      cover.src = steg.encode(textarea.value, img);
-      download.href=cover.src.replace("image/png", "image/octet-stream");
-      console.log("succes")
-  }
+const encryptImage = (fileName) => {
+  const imageBuffer = fs.readFileSync(path.resolve(__dirname, `../files/${fileName}`));
+  const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
+  const encryptedBuffer = Buffer.concat([cipher.update(imageBuffer), cipher.final()]);
+  const encryptedHex = encryptedBuffer.toString('hex');
+  const separatedPath = fileName.split('.');
+  const absolutePath = path.resolve(__dirname, `../files/${separatedPath[0]}.txt`);
+  fs.writeFileSync(absolutePath, encryptedHex);
 }
 
-// DEKRIPSI GAMBAR
-function decryptImage() {
-  var img = document.getElementById("img"),
-  message = document.getElementById("message"),
-  textarea = document.getElementById("text");
-  if(img && textarea) {
-    message.innerHTML = steg.decode(img);
-    textarea.value = message.innerHTML;
-  }
+const decryptImage = (fileName) => {
+  const separatedPath1 = fileName.split('\\');
+  const separatedPath2 = separatedPath1[1].split('.');
+  const encryptedHex = fs.readFileSync(path.resolve(__dirname, `../files/${separatedPath2[0]}.txt`), 'utf-8');
+  const encryptedBuffer = Buffer.from(encryptedHex, 'hex');
+  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
+  const decryptedBuffer = Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]);
+  const absolutePath = path.resolve(__dirname, `../files/${separatedPath2[0]}-decrypt-image.${separatedPath2[1]}`);
+  fs.writeFileSync(absolutePath, decryptedBuffer);
 }
 
 module.exports = { 
   hashEmail,
   hashPassword,
-  encryptFullName,
-  decryptFullName,
+  encryptAES,
+  decryptAES,
   caesarCipher,
   superEnkripsi,
   superDekripsi,

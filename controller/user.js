@@ -6,7 +6,6 @@ const { Op } = require('sequelize');
 const {
   hashEmail,
   hashPassword,
-  encryptFullName
 } = require('./script');
 
 //handler register
@@ -18,10 +17,9 @@ const registerUser = async(req,res,next)=>{
     
     // Check Field
     if(!fullName || !email || ! password){
-      res.status(400).json({
-        status: "failed",
-        message: "Please fill all the form"
-      })
+      const error = new Error("Please fill all the form");
+      error.statusCode = 400;
+      throw error;
     }
     
     // Akun udah ada / belum
@@ -30,9 +28,11 @@ const registerUser = async(req,res,next)=>{
         email: email
       }
     });
-
+    
     if(userExist){
-      throw new Error("User Already exists")
+      const error = new Error("User Already exists");
+      error.statusCode = 405;
+      throw error;
     }
     
     // username udah kepakai
@@ -41,16 +41,16 @@ const registerUser = async(req,res,next)=>{
         fullName: fullName
       }
     });
-    if(fullNameExist){
-      throw new Error("FullName Already exists")
-    }
 
+    if(fullNameExist){
+        const error = new Error("User Already exists");
+        error.statusCode = 406;
+        throw error;
+    }
+    
     //hashed data user    
-    const hashedFullName = encryptFullName(fullName);
     const hashedEmail = hashEmail(email);
     const hashedPassword = hashPassword(password);
-
-    console.log(hashedPassword)
     
     //insert data ke tabel User
     const currentUser = await User.create({
@@ -81,10 +81,9 @@ const loginHandler = async (req,res,next)=>{
   try {
     const { email, password} = req.body;
     
-    const hashedEmail = hashEmail(email);
-    const hashedPassword = hashPassword(password);
+    const hashedEmail = hashEmail(email).toString('hex');
+    const hashedPassword = hashPassword(password).toString('hex');
     
-    console.log(hashedEmail);
     const currentUser = await User.findOne({
       where:{
         email: hashedEmail

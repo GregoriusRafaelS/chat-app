@@ -2,7 +2,7 @@ require('dotenv').config();
 const User = require('../model/User');
 const Message = require('../model/Message');
 const Chat = require('../model/Chat');
-const { superEnkripsi, superDekripsi } = require("./script")
+const { superEnkripsi, superDekripsi, encryptAES, decryptAES, encryptImage, decryptImage } = require("./script")
 
 const messageController = {
   allMessages : async (req, res) => {
@@ -34,6 +34,12 @@ const messageController = {
 
       messages.map(message => {
         message.content = superDekripsi(message.content, 4, true);
+        if(message.mediaUrl !== "Ga ada file nih"){
+          message.mediaUrl = decryptAES(message.mediaUrl);
+          decryptImage(message.mediaUrl);
+          const separatedPath = message.mediaUrl.split('.');
+          message.mediaUrl = `${separatedPath[0]}-decrypt-image.${separatedPath[1]}`
+        }
       });
       
       res.json(messages);
@@ -57,9 +63,16 @@ const messageController = {
           fullName
         }
       })
-
-      const filePathFix = req.file ? req.file.path : "Ga ada file nih";
-
+      
+      let filePathFix;
+      if(req.file){
+        filePathFix = encryptAES(req.file.path)
+        const separatedPath = req.file.path.split('\\');
+        encryptImage(separatedPath[1]);
+      }else{
+        filePathFix = "Ga ada file nih"
+      }
+      
       const newMessage = {
         senderUserId: req.user.userId,
         receiverUserId: receiver.id,

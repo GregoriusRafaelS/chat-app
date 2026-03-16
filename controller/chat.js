@@ -1,4 +1,4 @@
-const { Op, where } = require('sequelize');
+const { Op, where,literal } = require('sequelize');
 const Chat = require('../model/Chat');
 const User = require('../model/User');
 const Message = require('../model/Message');
@@ -6,34 +6,72 @@ const ChatConversation = require('../model/ChatConversation');
 
 const accessChat = async (req, res) => {
   const { userId } = req.body;
+  // return res.json(req.user);
+  // return res.json(typeof(req.user.id));
   if (!userId) {
     console.log("UserId param not sent with request");
     return res.sendStatus(400);
   }
   try {
-    const isChat = await Chat.findOne({
-      where: {
-        isGroupChat: false
+  //   const isChat = await Chat.findOne({
+  //     where: {
+  //       isGroupChat: false
+  //     },
+  //     include: [
+  //       {
+  //         model: User,
+  //         as: 'users',
+  //         attributes: { exclude: ['password'] },
+  //         through: {
+  //           model: ChatConversation,
+  //           attributes: [],
+  //         },
+  //         where: {
+  //           id: {
+  //             [Op.in]: [req.user.userId, userId],
+  //           },
+  //         },
+  //       },
+  //     ],
+  //   });
+
+  const isChat = await Chat.findAll({
+    where: {
+      isGroupChat: false,
+      id: {
+        [Op.in]: [
+          literal(`(
+            SELECT chatId
+            FROM chat_conversations
+            WHERE userId = ${req.user.userId}
+            
+            INTERSECT
+            
+            SELECT chatId
+            FROM chat_conversations
+            WHERE userId = ${userId}
+            
+          )`),
+        ],
       },
-      include: [
-        {
-          model: User,
-          as: 'users',
-          attributes: { exclude: ['password'] },
-          through: {
-            model: ChatConversation,
-            attributes: [],
-          },
-          where: {
-            id: {
-              [Op.in]: [req.user.id, userId],
-            },
-          },
-        },
-      ],
-    });
+    },
+    include: [
+      {
+        model: User,
+        as: 'users',
+        attributes: { exclude: ['password'] },
+        through: {
+          model: ChatConversation,
+          as: 'chats',
+          attributes: [],
+      },
+    },
+  ],
+    // group: ['chat.id'], 
+    // having: literal(`SELECT COUNT(id) FROM users WHERE id= ${userId}`), 
+  });
     
-    if (isChat) {
+    if (isChat.length == 1) {
       res.json(isChat);
     } else {
       const chatData = {
@@ -62,7 +100,6 @@ const accessChat = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
 
 const fetchChat = async (req, res) => {
   try {
@@ -125,6 +162,7 @@ const fetchChat = async (req, res) => {
     userChats = userChats.map(chat => {
       console.log(chat.users[0].fullName)
       if (chat.isGroupChat === false) {
+        if(chat.message) superDekripsi(chat.messages)
         return {
           chatId: chat.id,
           fullName: chat.users[0].fullName,

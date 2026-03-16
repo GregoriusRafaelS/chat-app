@@ -27,7 +27,7 @@ Chat.belongsToMany(User, { through: ChatConversation }, { as: 'chats', foreignKe
 
 const association = async()=>{
   try {
-    await my_db.sync({force: true});
+    await my_db.sync({force: false});
     // Friend.bulkCreate(statusFriend);
   } catch (error) {
     console.log(error.message);

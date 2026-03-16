@@ -1,19 +1,14 @@
 const multer = require('multer');
+const { encryptAES } = require('../controller/script')
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb){
     cb(null, 'files')
   },
   filename: function (req, file, cb) {
-    // Makai base64 image encoded
-    // const reader = new FileReader();
-    // reader.addEventListener("load", () => {
-    //   console.log(reader.result);
-    //   reader.readAsDataURL(file)
-    // })
-    // cb(null, file.originalname)
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, uniqueSuffix + '-' + file.originalname);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileName = uniqueSuffix + '-' + file.originalname;
+    cb(null, fileName);
   }
 })
 
