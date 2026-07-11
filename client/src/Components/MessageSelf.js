@@ -1,16 +1,16 @@
 import React from 'react'
-// import "./myStyles.css"
 
 function MessageSelf({props}) {
-  const media  = props.mediaUrl !== "Ga ada file nih" ? true : false;
+  const media  = props.mediaUrl !== null ? true : false;
   const files = media ? props.mediaUrl.split("\\") : "kosong";
+  const beURL = process.env.REACT_APP_BE_URL;
 
   return (
     <div className='self-message-container'>
       <div className='messageBox'>
-        {media && <img style={{ maxHeight: '250px', maxWidth: '250px' }} src={`http://localhost:5000/${files[1]}`} alt="Media" />}        
+        {media && <img style={{ maxHeight: '250px', maxWidth: '250px' }} src={`${beURL}/${files[1]}`} alt="Media" />}        
         <p>{props.content}</p>
-        <p className='self-timeStamp'>{props.updatedAt}</p>
+        <p className='self-timeStamp'>{new Date(props.createdAt).toLocaleString('id-ID')}</p>
       </div>
     </div>
   )

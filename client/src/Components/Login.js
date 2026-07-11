@@ -14,6 +14,7 @@ function Login() {
   const [signInStatus, setSignInStatus] = useState("");
 
   const navigate = useNavigate();
+  const beURL = process.env.REACT_APP_BE_URL;
 
   const changeHandler = (e) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -29,11 +30,10 @@ function Login() {
       };
 
       const response = await axios.post(
-        "http://localhost:5000/users/login/",
+        `${beURL}/users/login/`,
         data,
         config
       );
-      console.log("Login : ", response);
       setLogInStatus({ msg: "Success", key: Math.random() });
       setLoading(false);
       localStorage.setItem("userData", JSON.stringify(response));
@@ -57,7 +57,7 @@ function Login() {
       };
 
       const response = await axios.post(
-        "http://localhost:5000/users/register",
+        `${beURL}/users/register`,
         data,
         config
       );

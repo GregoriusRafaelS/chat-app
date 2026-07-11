@@ -10,21 +10,17 @@ function Users() {
   const userData = JSON.parse(localStorage.getItem("userData"));
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
-  
-  if (!userData) {
-    console.log("User not Authenticated");
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    navigate('/');
-  }
+  const beURL = process.env.REACT_APP_BE_URL;
+  let token;
+  if(userData) token = userData.data.token;
   
   useEffect(() => {
-    
     const config = {
       headers: {
-        Authorization: `Bearer ${userData.data.token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
-    axios.get(`http://localhost:5000/users/fetchAllUsers?search=%${searchTerm}`, config)
+    axios.get(`${beURL}/users/fetchAllUsers?search=%${searchTerm}`, config)
     .then((response) => {
       console.log("User data refreshed in Users panel");
       setUsers(response.data);
@@ -32,7 +28,7 @@ function Users() {
     .catch((error) => {
       console.error("Error fetching user data:", error);
     });
-  }, [searchTerm]);
+  }, [token, searchTerm, beURL]);
 
   return (
     <div className='list-container'>
@@ -60,20 +56,31 @@ function Users() {
                 className={"list-item" }
                 key={index}
                 onClick={() => {
-                  console.log("Memulia chat dengan ", user.fullName);
+                  console.log("Memulai chat dengan ", user.fullName);
                   const config = {
                     headers: {
                       Authorization: `Bearer ${userData.data.token}`,
                     },
                   };
                   axios.post(
-                    "http://localhost:5000/chat",
+                    `${beURL}/conversation`,
                     {
                       userId: user.id,
+                      type: 'Personal'
                     },
                     config
-                  );
-                }}
+                  )
+                  .then((response) => {
+                    const data = response.data;
+
+                    const convId = data.id;
+                    navigate("/app/conversation/" + convId + "&" + user.fullName)
+                  })
+                  .catch((error) => {
+                    console.error("Error:", error);
+                  });
+                }
+              }
               >
                 <p className={"con-icon" }>{user.fullName[0]}</p>
                 <p className={"con-title" }>

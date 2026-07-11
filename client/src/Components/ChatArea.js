@@ -16,6 +16,7 @@ function ChatArea() {
   const [allMessages, setAllMessages] = useState([]);
   const [loaded, setloaded] = useState(false);
   const [file, setFile] = useState();
+  const beURL = process.env.BE_URL;
   const userData = JSON.parse(localStorage.getItem("userData"))
   let token;
   if(userData) token = userData.data.token
@@ -53,7 +54,7 @@ function ChatArea() {
 
     if (hasMessage || hasImage) {
       await axios.post(
-        "http://localhost:5000/message/",
+        `${beURL}/message/`,
         formData,
         config
       );
@@ -67,12 +68,12 @@ function ChatArea() {
       },
     };
     
-    axios.get("http://localhost:5000/message/" + convId, config)
+    axios.get(`${beURL}/message/` + convId, config)
     .then(({ data }) => {
       setAllMessages(data);
       setloaded(true);
     });
-}, [token, convId]);
+}, [token, convId, beURL]);
 
   useEffect(() => {
     socket.on("receive-message", (message) => {

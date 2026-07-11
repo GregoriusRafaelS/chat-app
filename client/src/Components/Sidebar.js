@@ -8,34 +8,33 @@ import SearchIcon from '@mui/icons-material/Search';
 import { IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useCallback } from 'react';
 
 function Sidebar() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const userData = JSON.parse(localStorage.getItem("userData"));
   const [conversations, setConversations] = useState([]);
+  const userData = JSON.parse(localStorage.getItem("userData"));
+  const beURL = process.env.REACT_APP_BE_URL;
 
+  let token;
+  if(userData) token = userData.data.token
   
-  useEffect(() => {
-    if (!userData) {
-      console.log("User not Authenticated");
-      navigate('/');
-      
-    }
-    const config = {
+  const searchConversation = useCallback(async () => {
+    const response = await axios.get(
+      `${beURL}/conversation`,{
+      params: { searchTerm: searchTerm }, 
       headers: {
-        Authorization: `Bearer ${userData.data.token}`,
+        Authorization: `Bearer ${token}`,
       },
-    };
-    axios.get(`http://localhost:5000/chat?search=%${searchTerm}`, config)
-    .then((response) => {
-      // console.log("User data refreshed in Users panel");
-      setConversations(response.data);
-    })
-    .catch((error) => {
-      console.error("Error fetching user data:", error);
     });
-  }, [searchTerm, userData, navigate]);
+    setConversations(response.data);
+  }, [token, searchTerm, beURL]);
+
+  useEffect(() => {
+    searchConversation()
+  }, [searchConversation]);
+
   return (
     <div className="sidebar-container">
       <div className="sb-header">
@@ -53,6 +52,7 @@ function Sidebar() {
         >
             <PersonAddIcon />
           </IconButton>
+
           <IconButton 
           onClick={() => {
             navigate('groups');
@@ -60,6 +60,7 @@ function Sidebar() {
         >
             <GroupAddIcon />
           </IconButton>
+
           <IconButton 
           onClick={() => {
             navigate('create-groups');
@@ -67,6 +68,7 @@ function Sidebar() {
         >
             <AddCircleIcon />
           </IconButton>
+
           <IconButton 
           onClick={() => {
             localStorage.removeItem("userData");
@@ -90,76 +92,29 @@ function Sidebar() {
 
       <div className="sb-conversation">
         {conversations.map((conversation, index) => {
-          if (conversation.length === 1) {
-            return <div key={index}></div>;
-          }
-          if (conversation.messages.length === 0) {
-            return (
-              <div
-              key={index}
-              onClick={() => {
-                console.log("Refresh fired from sidebar");
-                // dispatch(refreshSidebarFun());
-                // setRefresh(!refresh);
-                }}
-                >
-                <div
-                  key={index}
-                  className="conversation-container"
-                  onClick={() => {
-                    const config = {
-                      headers: {
-                        Authorization: `Bearer ${userData.data.token}`,
-                      },
-                    };
-                    axios.get(
-                      `http://localhost:5000/chat?chatId=${conversation.chatId}?fullName=${conversation.fullName}`,
-                      config
-                    )
-                    .then((response) => console.log(response.data));
-                    navigate(
-                      "chat/" +
-                        conversation.chatId +
-                        "&" +
-                        conversation.fullName
-                        );
-                      }}
-                      >
-                  <p className="con-icon">
-                    {conversation.fullName[0]}
-                  </p>
-                  <p className="con-title">
-                    {conversation.fullName}
-                  </p>
-
-                  <p className="con-lastMessage">
-                    Belum ada obrolan, mulai sekarang juga ...
-                  </p>
-                </div>
-              </div>
-            );
-          }else{
-            return (
-              <div
-              key={index}
-              className="conversation-container"
-              onClick={() => {
-                navigate(
-                  "chat/" +
-                    conversation.chatId +
-                    "&" +
-                    conversation.fullName
-                );
-              }}
-              >
-                <p className='con-icon'>{conversation.fullName[0]}</p>
-                <p className='con-title'>{conversation.fullName}</p>
-                 <p className='con-lastMessage'>{conversation.messages[0].content.length > 30 ? `${conversation.messages[0].content.substring(0, 30)}...` : conversation.messages[0].content}</p>
-                {/* <p className='con-lastMessage'>{conversation.messages[0].content}</p> */}
-                <p className='con-timeStamp'>{conversation.messages[0].updatedAt}</p>
-              </div>
-            )
-          }
+          // if (conversation.length === 1) {
+          //   return <div key={index}></div>;
+          // }
+          
+          return (
+            <div
+            key={index}
+            className="conversation-container"
+            onClick={() => {
+              navigate(
+                "conversation/" +
+                  conversation.conversationId +
+                  "&" +
+                  conversation.fullName
+              );
+            }}
+            >
+              <p className='con-icon'>{conversation.fullName[0]}</p>
+              <p className='con-title'>{conversation.fullName}</p>
+               <p className='con-lastMessage'>{conversation.messages.length > 30 ? `${conversation.messages.substring(0, 30)}...` : conversation.content}</p>
+              <p className='con-timeStamp'>{new Date(conversation.updatedAt).toLocaleString('id-ID')}</p>
+            </div>
+          )
         })}
       </div>
     </div>
