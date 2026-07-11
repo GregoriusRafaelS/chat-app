@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
-    "start-dev": "nodemon app.js"
+    "dev": "node app.js",
+    "start-dev": "nodemon app.js dist/app.js"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +25,12 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.1",
     "nodemon": "^3.0.1",
-    "sequelize-cli": "^6.6.5"
+    "sequelize-cli": "^6.6.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.0",
+    "typescript": "^5.9.2"
   }
 }
