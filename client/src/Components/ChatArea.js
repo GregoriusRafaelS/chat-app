@@ -6,64 +6,86 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import MessageOthers from './MessageOthers';
 import MessageSelf from './MessageSelf';
 import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
-const userData = JSON.parse(localStorage.getItem("userData"));
+import { useParams } from 'react-router-dom';
+import { socket } from '../Socket/socket';
 
 function ChatArea() {
-  const navigate = useNavigate();
   const dyParams = useParams();
   const [messageContent, setMessageContent] = useState("");
-  const [chatId, fullName] = dyParams.id.split("&");
+  const [convId, fullName] = dyParams.id.split("&");
   const [allMessages, setAllMessages] = useState([]);
   const [loaded, setloaded] = useState(false);
   const [file, setFile] = useState();
+  const userData = JSON.parse(localStorage.getItem("userData"))
+  let token;
+  if(userData) token = userData.data.token
 
-  if (!userData) {
-    console.log("User not Authenticated");
-    navigate("/");
-  }
+  const sendMessage = async () => {
+    const filePath = file ? file.path : null;
+    socket.emit("send-message", {
+      name:"",
+      senderId: userData.data.currentUser.id,
+      content: messageContent,
+      mediaUrl: filePath,
+      createdAt: new Date(),
+      User:{
+        fullName: userData.data.currentUser.fullName
+      }
+    })
 
-  const sendMessage = () => {
-    // console.log("SendMessage Fired to", chat_id._id);
     const config = {
       headers: {
-        Authorization: `Bearer ${userData.data.token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
     
     const formData = new FormData();
-    formData.append('content', messageContent)
-    formData.append('chatId', chatId)
-    formData.append('fullName', fullName)
-    formData.append('image', file)
-    axios
-      .post(
+
+    formData.append('messageContent', messageContent);
+    formData.append('convId', convId);
+    formData.append('image', file);
+
+    const message = formData.get('messageContent');
+    const image = formData.get('image');
+
+    const hasMessage = message?.trim() !== '';
+    const hasImage = image && image.size > 0;
+
+    if (hasMessage || hasImage) {
+      await axios.post(
         "http://localhost:5000/message/",
         formData,
         config
-      )
-      .then(({ data }) => {
-        console.log("Message Fired");
-      });
-  };
+      );
+    }
+  }
 
-  const user = userData.data;
   useEffect(() => {
     const config = {
       headers: {
-        Authorization: `Bearer ${user.token}`,
+        Authorization: `Bearer ${token}`,
       },
     };
-
-    axios.get("http://localhost:5000/message/" + chatId, config)
+    
+    axios.get("http://localhost:5000/message/" + convId, config)
     .then(({ data }) => {
       setAllMessages(data);
-      console.log(allMessages)
       setloaded(true);
-      // console.log("Data from Acess Chat API ", data);
     });
-  // scrollToBottom();
-}, [chatId]);
+}, [token, convId]);
+
+  useEffect(() => {
+    socket.on("receive-message", (message) => {
+      setAllMessages((prev) => [
+        message,
+        ...prev
+      ])
+    })
+
+  return () => {
+    socket.off("receive-message");
+  };
+}, []);
 
   if (!loaded) {
     return (
@@ -116,21 +138,21 @@ function ChatArea() {
         <div className="messages-container">
           {allMessages
             .map((message, index) => {
-              const sender = message.sender.id;
+              const sender = message.senderId;
               const self_id = userData.data.currentUser.id;
               const itsMe = sender === self_id ? true : false;
               let valueMessage = {
-                name: "Siapa aku kwkwk",
+                name: "",
                 content: message.content,
                 mediaUrl: message.mediaUrl,
-                updatedAt: message.updatedAt
+                createdAt: message.createdAt
               }
 
               if (itsMe) {
                 valueMessage.name = userData.data.currentUser.fullName;
                 return <MessageSelf props={valueMessage} key={index} />;
               } else {
-                valueMessage.name = message.sender.fullName;
+                valueMessage.name = message.User.fullName;
                 return <MessageOthers props={valueMessage} key={index} />;
               }
             })}
