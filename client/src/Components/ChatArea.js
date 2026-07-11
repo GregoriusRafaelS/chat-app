@@ -16,7 +16,7 @@ function ChatArea() {
   const [allMessages, setAllMessages] = useState([]);
   const [loaded, setloaded] = useState(false);
   const [file, setFile] = useState();
-  const beURL = process.env.BE_URL;
+  const beURL = process.env.REACT_APP_BE_URL;
   const userData = JSON.parse(localStorage.getItem("userData"))
   let token;
   if(userData) token = userData.data.token
