@@ -1,97 +1,70 @@
 require('dotenv').config();
-const User = require('../model/User');
-const Message = require('../model/Message');
-const Chat = require('../model/Chat');
+const {User, Conversation, Message} = require('../models');
 const { superEnkripsi, superDekripsi, encryptAES, decryptAES, encryptImage, decryptImage } = require("./script")
 
 const messageController = {
   allMessages : async (req, res) => {
     try {
-      
-      const { chatId, fullName, profilePicture } = req.params; 
+      const { convId, profilePicture } = req.params; 
       const messages = await Message.findAll({
         where: {
-          chatId,
+          conversationId: convId,
         },
         include: [
           {
             model: User,
-            as: 'sender',
             attributes: ['fullName', 'email', 'id'],
-          },
-          {
-            model: User,
-            as: 'receiver',
-            attributes: ['fullName', 'email', 'id'],
-          },
-          {
-            model: Chat,
-            as: 'chat',
           },
         ],
-        order: [['updatedAt', 'DESC']], 
+        order: [['createdAt', 'DESC']], 
       });
 
-      messages.map(message => {
-        message.content = superDekripsi(message.content, 4, true);
-        if(message.mediaUrl !== "Ga ada file nih"){
-          message.mediaUrl = decryptAES(message.mediaUrl);
-          decryptImage(message.mediaUrl);
-          const separatedPath = message.mediaUrl.split('.');
-          message.mediaUrl = `${separatedPath[0]}-decrypt-image.${separatedPath[1]}`
-        }
-      });
-      
-      res.json(messages);
+      if(messages.length > 0){
+        messages.map(message => {
+          message.dataValues.content = superDekripsi(message.dataValues.content, 4, true);
+          if(message.dataValues.mediaUrl){
+            message.dataValues.mediaUrl = decryptAES(message.dataValues.mediaUrl);
+            decryptImage(message.dataValues.mediaUrl);
+            const separatedPath = message.dataValues.mediaUrl.split('.');
+            message.dataValues.mediaUrl = `${separatedPath[0]}-decrypt-image.${separatedPath[1]}`
+          }
+        });
+      }
+      res.status(200).json(messages);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
   },
   sendMessage : async (req, res) => {
-    const { content, chatId, fullName } = req.body;
-
-    if (!content || !chatId || !fullName) {
+    const { messageContent, convId, file} = req.body;
+    if (!messageContent || !convId) {
       console.log("Invalid data passed into request");
       return res.sendStatus(400);
     }
 
-    const contentEnkrip = superEnkripsi(content, 4);
-
     try {
-      const receiver = await User.findOne({
-        where:{
-          fullName
-        }
-      })
-      
+      const contentEnkrip = superEnkripsi(messageContent, 4);
+
       let filePathFix;
       if(req.file){
         filePathFix = encryptAES(req.file.path)
         const separatedPath = req.file.path.split('\\');
         encryptImage(separatedPath[1]);
       }else{
-        filePathFix = "Ga ada file nih"
+        filePathFix = null
       }
       
       const newMessage = {
-        senderUserId: req.user.userId,
-        receiverUserId: receiver.id,
+        senderId: req.user.userId,
+        conversationId: convId,
+        type: 'User',
         content: contentEnkrip,
-        chatId: chatId,
         mediaUrl: filePathFix
       };
       
       const message = await Message.create(newMessage);
       
-      const populatedMessage = await Message.findByPk(message.id, {
-        include: [
-          { model: User, as: 'sender', attributes: ['fullName', 'email'] },
-          { model: Chat, as: 'chat' , attributes: ['id'], include: [{ model: User, as: 'users', attributes: ['fullName', 'email'] }] },
-          { model: User, as: 'receiver' },
-        ],
-      });
-  
-      res.status(200).json({ message: 'Message sent successfully', data: populatedMessage });
+      res.status(200).json({ message: 'Message sent successfully'});
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

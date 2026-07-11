@@ -1,7 +1,7 @@
 require('dotenv').config();
-const User = require('../model/User');
+const {User} = require('../models');
 // const bcrypt = require('bcrypt');
-const generateToken = require('../middleware/generateToke');
+const generateToken = require('../middleware/generateToken');
 const { Op } = require('sequelize');
 const {
   hashEmail,
@@ -57,6 +57,8 @@ const registerUser = async(req,res,next)=>{
       fullName,
       email: hashedEmail.toString('hex'),
       password : hashedPassword.toString('hex'),
+      profilePicture: "",
+      verified: false
     });
     
     const payload = { userId: currentUser.id, fullName: currentUser.fullName }
@@ -133,14 +135,14 @@ const getUserByToken = async(req,res,next)=>{
       ],
     } : {};
     // Menjalankan query pencarian
-    const users = await User.findAll({
+    const user = await User.findAll({
       where: {
         id: { [Op.ne]: req.user.userId }, // kucalikan orang yg login
         ...searchCriteria,
       },
     });
 
-  res.json(users);
+  res.json(user);
   } catch (err) {
     return res.status(500).json({msg: err.message});
   }
