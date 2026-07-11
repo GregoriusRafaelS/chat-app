@@ -1,9 +1,11 @@
-const { Op, where,literal } = require('sequelize');
-const {Conversation, ConversationParticipation, User, Message} = require('../models');
+import { Op,literal } from "sequelize";
+import { Request, Response } from "express";
+import db from "../models/index";
+const {Conversation, ConversationParticipation, User, Message} = db
 const { superDekripsi } = require('./script');
 
-const addConversation = async (req, res) => {
-  const { type, userId } = req.body;
+const addConversation = async (req: Request, res: Response) => {
+  const {userId} = req.body;
   
   if (!userId) {
     console.log("UserId param not sent with request");
@@ -19,7 +21,7 @@ const addConversation = async (req, res) => {
           model: ConversationParticipation,
           where: {
             userId: {
-              [Op.in]: [userId, req.user.userId]
+              [Op.in]: [userId, req.user?.userId]
             }
           },
         }
@@ -44,7 +46,7 @@ const addConversation = async (req, res) => {
     await ConversationParticipation.bulkCreate([
       {
         conversationId: conversationId,
-        userId: req.user.userId,
+        userId: req.user?.userId,
         role: 'Member'
       },
       {
@@ -55,13 +57,13 @@ const addConversation = async (req, res) => {
     ])
     
     res.status(200).json(conversationId);
-  } catch (error) {
-    console.log(error)
+  } catch (error: any) {
+    console.log(error);
     res.status(400).json({ error: error.message });
   }
 };
 
-let fetchConversation = async (req, res) => {
+let fetchConversation = async (req: Request, res: Response) => {
   try {
     const keyword = req.query.searchTerm;
     const searchCriteria = keyword ? {
@@ -95,7 +97,7 @@ let fetchConversation = async (req, res) => {
         {
           model: ConversationParticipation,
           where: {
-            userId: req.user.userId
+            userId: req.user?.userId
           },
           attributes: []
         },
@@ -108,7 +110,7 @@ let fetchConversation = async (req, res) => {
           },
           where: {
             id: {
-              [Op.ne]: req.user.userId
+              [Op.ne]: req.user?.userId
             }
           },
         },
@@ -124,10 +126,10 @@ let fetchConversation = async (req, res) => {
     });
 
     conversations = conversations.filter(
-      conv => conv.Messages.length > 0
+      (conv: any) => conv.Messages.length > 0
     );
 
-    conversations = conversations.map(conv => {
+    conversations = conversations.map((conv: any) => {
       if (conv.type === 'Personal') {
         if(conv.Messages[0]) superDekripsi(conv.Messages[0].dataValues.content, 4, true)
           return {
@@ -140,33 +142,33 @@ let fetchConversation = async (req, res) => {
       } else {
         return conv;
       }
-    }).filter(conv => conv !== null);
+    }).filter((conv: any) => conv !== null);
 
     res.status(200).json(conversations);
-  } catch (error) {
+  } catch (error: any) {
     console.log(error)
     res.status(400).json({ error: error.message });
   }
 };
 
-const fetchGroup = async (req, res) => {
+const fetchGroup = async (req: Request, res: Response) => {
   try {
-    const allGroups = await Chat.findAll({
+    const allGroups = await Conversation.findAll({
       where:{
         isGroupChat: true
       }
     });
     res.status(200).json(allGroups);
-  } catch (error) {
+  } catch (error: any) {
     res.status(400);
     throw new Error(error.message);
   }
 }
 
-const createGroupChat = async (req, res) => {
+const createGroupChat = async (req: Request, res: Response) => {
 }
 
-const exitGroup = async (req, res) => {
+const exitGroup = async (req: Request, res: Response) => {
 }
 
-module.exports = { addConversation, fetchConversation, fetchGroup, createGroupChat, exitGroup };
+export { addConversation, fetchConversation, fetchGroup, createGroupChat, exitGroup };

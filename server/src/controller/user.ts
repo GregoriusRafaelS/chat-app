@@ -1,15 +1,18 @@
-require('dotenv').config();
-const {User} = require('../models');
-// const bcrypt = require('bcrypt');
-const generateToken = require('../middleware/generateToken');
-const { Op } = require('sequelize');
+import dotenv from "dotenv"
+dotenv.config();
+import { NextFunction, Request, Response } from "express";
+import db from "../models/index";
+import generateToken from "../middleware/generateToken";
+import { Op } from "sequelize";
+import { UserPayload } from "../types/express";
+const {User} = db;
 const {
   hashEmail,
   hashPassword,
 } = require('./script');
 
 //handler register
-const registerUser = async(req,res,next)=>{
+const registerUser = async(req: Request,res: Response, next: NextFunction)=>{
   try {
     const {
       fullName, email, password
@@ -17,7 +20,7 @@ const registerUser = async(req,res,next)=>{
     
     // Check Field
     if(!fullName || !email || ! password){
-      const error = new Error("Please fill all the form");
+      const error = new Error("Please fill all the form") as any;
       error.statusCode = 400;
       throw error;
     }
@@ -30,7 +33,7 @@ const registerUser = async(req,res,next)=>{
     });
     
     if(userExist){
-      const error = new Error("User Already exists");
+      const error = new Error("User Already exists") as any;
       error.statusCode = 405;
       throw error;
     }
@@ -43,7 +46,7 @@ const registerUser = async(req,res,next)=>{
     });
 
     if(fullNameExist){
-        const error = new Error("User Already exists");
+        const error = new Error("User Already exists") as any;
         error.statusCode = 406;
         throw error;
     }
@@ -71,7 +74,7 @@ const registerUser = async(req,res,next)=>{
       currentUser
     });
     
-  } catch (error) {
+  } catch (error: any) {
     res.status(error.statusCode || 500).json({
       status: "Error",
       message: error.message
@@ -79,7 +82,7 @@ const registerUser = async(req,res,next)=>{
   }
 };
 
-const loginHandler = async (req,res,next)=>{
+const loginHandler = async (req: Request, res: Response, next: NextFunction)=>{
   try {
     const { email, password} = req.body;
     
@@ -94,7 +97,7 @@ const loginHandler = async (req,res,next)=>{
     
     //apabila user tidak ditemukan
     if (currentUser == undefined){
-      const error = new Error("wrong email");
+      const error = new Error("wrong email") as any;
       error.statusCode = 400;
       throw error;
     }
@@ -104,11 +107,11 @@ const loginHandler = async (req,res,next)=>{
 
     //apabila password salah / tidak matched
     if (checkPassword === false){
-      const error = new Error("wrong email or password");
+      const error = new Error("wrong email or password") as any;
       error.statusCode = 400;
       throw error;
     }
-    const payload = {userId: currentUser.id, fullName: currentUser.fullName}
+    const payload:UserPayload = {userId: currentUser.id, fullName: currentUser.fullName}
 
     res.status(200).json({
       status: "Success",
@@ -117,7 +120,7 @@ const loginHandler = async (req,res,next)=>{
       currentUser
     })
 
-  } catch (error) {
+  } catch (error: any) {
     res.status(error.statusCode || 500).json({
       status: "errorr",
       message: error.message
@@ -125,7 +128,7 @@ const loginHandler = async (req,res,next)=>{
   }
 }
 
-const getUserByToken = async(req,res,next)=>{
+const getUserByToken = async(req: Request,res: Response,next: NextFunction)=>{
   try {
     const keyword = req.query.search;
     const searchCriteria = keyword ? {
@@ -137,17 +140,17 @@ const getUserByToken = async(req,res,next)=>{
     // Menjalankan query pencarian
     const user = await User.findAll({
       where: {
-        id: { [Op.ne]: req.user.userId }, // kucalikan orang yg login
+        id: { [Op.ne]: req.user?.userId }, // kucalikan orang yg login
         ...searchCriteria,
       },
     });
 
   res.json(user);
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).json({msg: err.message});
   }
 }
 
-module.exports = {
+export {
   registerUser, loginHandler, getUserByToken
 }

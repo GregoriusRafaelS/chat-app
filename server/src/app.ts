@@ -1,9 +1,10 @@
 require('dotenv').config();
 
-const express = require('express');
-const cors = require("cors");
-const { createServer } = require("http");
-const { Server } = require("socket.io")
+import express from "express";
+
+import cors from "cors";
+import { createServer } from "http";
+import { Server, Socket } from "socket.io"
 
 const app = express();
 const httpServer = createServer(app);
@@ -21,21 +22,19 @@ app.use(
   })
 );
 
-io.on("connection", (socket) => {
+io.on("connection", (socket: Socket) => {
   console.log("User Connected");
-  socket.on("send-message", (message) => {
+  socket.on("send-message", (message: string) => {
     console.log(message)
     io.emit("receive-message", message)
   });
 });
 
-const userRouter = require('./routes/user');
-const conversationRouter = require('./routes/conversation');
-// const friendRouter = require('./routes/friend');
-const messageRouter = require('./routes/message');
+import userRouter from "./routes/user";
+import conversationRouter from "./routes/conversation";
+import messageRouter from "./routes/message";
 
 app.use(userRouter);
-// app.use(friendRouter);
 app.use(conversationRouter);
 app.use(messageRouter);
 

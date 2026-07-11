@@ -1,24 +1,24 @@
 require('dotenv').config();
 
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
+import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 const algorithm = 'aes-256-cbc';
 const key = process.env.AES_KEY;
 const iv = Buffer.from(process.env.AES_IV, 'utf-8'); 
 
 // Hash MD5
-const hashEmail = (email) => {
+const hashEmail = (email: string) => {
   return crypto.createHash('md5').update(email).digest('hex');
 }
 
 // Hash SHA256
-const hashPassword = (password) => {
+const hashPassword = (password: string) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
 // Enkripsi AES
-const encryptAES = (text) =>{
+const encryptAES = (text: string) =>{
   const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
   let encrypted = cipher.update(text, 'utf-8', 'hex');
   encrypted += cipher.final('hex');
@@ -26,7 +26,7 @@ const encryptAES = (text) =>{
 } 
 
 // Dekripsi AES
-const decryptAES = (encryptedText) =>{
+const decryptAES = (encryptedText: string) =>{
   const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
   let decrypted = decipher.update(encryptedText, 'hex', 'utf-8');
   decrypted += decipher.final('utf-8');
@@ -34,7 +34,7 @@ const decryptAES = (encryptedText) =>{
 }  
 
 // Dekripsi && enkripsi Caesar
-const caesarCipher = (str, shift, decrypt = false) => {
+const caesarCipher = (str: any, shift: number, decrypt = false) => {
   const s = decrypt ? (26 - shift) % 26 : shift;
   const n = s > 0 ? s : 26 + (s % 26);
   return [...str]
@@ -50,20 +50,20 @@ const caesarCipher = (str, shift, decrypt = false) => {
 };
 
 // supeer eknripsi
-const superEnkripsi = (str, shift, decrypt = false) =>{
+const superEnkripsi = (str: any, shift: number, decrypt = false) =>{
   let chiperText = encryptAES(str);
   chiperText = caesarCipher(chiperText, shift, decrypt);
   return chiperText;
 }
 
 // supeer dekripsi
-const superDekripsi = (str, shift, decrypt = false) =>{
+const superDekripsi = (str: any, shift: number, decrypt = false) =>{
   str = caesarCipher(str, shift, decrypt);
   const plainText = decryptAES(str);
   return plainText;
 }
 
-const encryptImage = (fileName) => {
+const encryptImage = (fileName: string) => {
   const imageBuffer = fs.readFileSync(path.resolve(__dirname, `../files/${fileName}`));
   const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
   const encryptedBuffer = Buffer.concat([cipher.update(imageBuffer), cipher.final()]);
@@ -73,7 +73,7 @@ const encryptImage = (fileName) => {
   fs.writeFileSync(absolutePath, encryptedHex);
 }
 
-const decryptImage = (fileName) => {
+const decryptImage = (fileName: string) => {
   const separatedPath1 = fileName.split('\\');
   const separatedPath2 = separatedPath1[1].split('.');
   const encryptedHex = fs.readFileSync(path.resolve(__dirname, `../files/${separatedPath2[0]}.txt`), 'utf-8');
@@ -84,7 +84,7 @@ const decryptImage = (fileName) => {
   fs.writeFileSync(absolutePath, decryptedBuffer);
 }
 
-module.exports = { 
+export { 
   hashEmail,
   hashPassword,
   encryptAES,

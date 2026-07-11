@@ -1,9 +1,9 @@
+import {Request, Response} from "express"
 require('dotenv').config();
 const {User, Conversation, Message} = require('../models');
 const { superEnkripsi, superDekripsi, encryptAES, decryptAES, encryptImage, decryptImage } = require("./script")
 
-const messageController = {
-  allMessages : async (req, res) => {
+const allMessages = async (req: Request, res: Response) => {
     try {
       const { convId, profilePicture } = req.params; 
       const messages = await Message.findAll({
@@ -20,7 +20,7 @@ const messageController = {
       });
 
       if(messages.length > 0){
-        messages.map(message => {
+        messages.map((message: any) => {
           message.dataValues.content = superDekripsi(message.dataValues.content, 4, true);
           if(message.dataValues.mediaUrl){
             message.dataValues.mediaUrl = decryptAES(message.dataValues.mediaUrl);
@@ -31,11 +31,12 @@ const messageController = {
         });
       }
       res.status(200).json(messages);
-    } catch (error) {
+    } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
-  },
-  sendMessage : async (req, res) => {
+  }
+
+const sendMessage = async (req: Request, res: Response) => {
     const { messageContent, convId, file} = req.body;
     if (!messageContent || !convId) {
       console.log("Invalid data passed into request");
@@ -55,7 +56,7 @@ const messageController = {
       }
       
       const newMessage = {
-        senderId: req.user.userId,
+        senderId: req.user?.userId,
         conversationId: convId,
         type: 'User',
         content: contentEnkrip,
@@ -65,12 +66,11 @@ const messageController = {
       const message = await Message.create(newMessage);
       
       res.status(200).json({ message: 'Message sent successfully'});
-    } catch (error) {
+    } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
   }
-}
 
 
 
-module.exports = messageController;
+export {allMessages, sendMessage};

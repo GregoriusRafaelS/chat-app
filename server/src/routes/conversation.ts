@@ -1,8 +1,8 @@
-const express = require('express');
+import express from "express"
 const router = express.Router();
 
-const auth = require('../middleware/auth');
-const {addConversation, fetchConversation, createGroupChat, fetchGroup, exitGroup}  = require('../controller/conversation');
+import auth from "../middleware/auth";
+import {addConversation, fetchConversation, createGroupChat, fetchGroup, exitGroup} from "../controller/conversation";
 
 router.post('/conversation',auth, addConversation);
 router.get('/conversation',auth, fetchConversation);
@@ -10,4 +10,4 @@ router.post('/conversation/createGroup',auth, createGroupChat);
 router.get('/conversation/fetchGroup',auth, fetchGroup);
 router.put('/conversation/exitGroup',auth, exitGroup);
 
-module.exports = router
+export default router;

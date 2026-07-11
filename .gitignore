@@ -4,4 +4,4 @@ server/node_modules/
 client/.env
 server/.env
 
-sever/files/
+sever/src/files/
