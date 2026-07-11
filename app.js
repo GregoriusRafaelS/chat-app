@@ -1,9 +1,17 @@
 require('dotenv').config();
 
-//ambil module express
 const express = require('express');
-const app = express();
 const cors = require("cors");
+const { createServer } = require("http");
+const { Server } = require("socket.io")
+
+const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer,{
+  cors: {
+    origin: "*"
+  }
+});
 
 app.use(express.json());
 app.use(express.static('files'));
@@ -13,28 +21,26 @@ app.use(
   })
 );
 
-//ambil router yang mengandle endpoint user
-const userRouter = require('./routes/user');
-const chatRouter = require('./routes/chat');
-const friendRouter = require('./routes/friend');
-const messageRouter = require('./routes/message');
-const association = require('./util/assoc_db');
+io.on("connection", (socket) => {
+  console.log("User Connected");
+  socket.on("send-message", (message) => {
+    console.log(message)
+    io.emit("receive-message", message)
+  });
+});
 
-//jalanin router
+const userRouter = require('./routes/user');
+const conversationRouter = require('./routes/conversation');
+// const friendRouter = require('./routes/friend');
+const messageRouter = require('./routes/message');
+
 app.use(userRouter);
-app.use(friendRouter);
-app.use(chatRouter);
+// app.use(friendRouter);
+app.use(conversationRouter);
 app.use(messageRouter);
 
-//ambil data dari dotenv
 const PORT = process.env.PORT;
 
-association()
-.then(()=>{
-  app.listen(PORT,()=>{
-    console.log('server is running on port 5000');
-  })
-})
-.catch(err=>{
-  console.log(err.message);
+httpServer.listen(PORT,()=>{
+  console.log('server is running on port 5000');
 })
