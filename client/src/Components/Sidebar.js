@@ -21,14 +21,21 @@ function Sidebar() {
   if(userData) token = userData.data.token
   
   const searchConversation = useCallback(async () => {
-    const response = await axios.get(
-      `${beURL}/conversation`,{
-      params: { searchTerm: searchTerm }, 
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setConversations(response.data);
+    try {
+      const response = await axios.get(
+        `${beURL}/conversation`,{
+        params: { searchTerm: searchTerm }, 
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setConversations(response.data);
+    } catch (error) {
+        if(error.response && error.response.status === 401){
+          localStorage.removeItem("userData");
+          window.location.href = '/';  
+        }
+    }
   }, [token, searchTerm, beURL]);
 
   useEffect(() => {

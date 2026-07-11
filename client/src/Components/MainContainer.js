@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import './myStyles.css';
 import Sidebar from "./Sidebar";
 import { Outlet, Navigate } from "react-router-dom";
@@ -7,9 +8,11 @@ function MainContainer() {
   let token
   if(userData) token = userData.data.token;
 
-  if (!token) {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(()=>{
+    if (!token) {
+      return <Navigate to="/" replace />;
+    }
+  })
 
   return (
     <div className="main-container">
