@@ -1,16 +1,21 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+import { Model, Sequelize, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "sequelize";
 
-module.exports = (sequelize, DataTypes) => {
-  class Message extends Model {
+export default (sequelize: Sequelize) => {
+  class Message extends Model<InferAttributes<Message>, InferCreationAttributes<Message>> {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
+    declare id: CreationOptional<Number>;
+    declare conversationId: number;
+    declare senderId: number;
+    declare replyId: number | null;
+    declare content: string | null;
+    declare mediaUrl: string | null;
+    declare type: string;
+
+    static associate(models: any) {
       // define association here
       Message.belongsTo(models.Conversation, {foreignKey: 'conversationId'})
       Message.belongsTo(models.User, {foreignKey: 'senderId'})
@@ -18,10 +23,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Message.init({
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     conversationId: {
       allowNull: false,
       type: DataTypes.INTEGER,
-      reference:{
+      references:{
         model: 'Converasation',
         key: 'id'
       },
@@ -29,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     senderId:{
       allowNull:false,
       type: DataTypes.INTEGER,
-      reference:{
+      references:{
         model: 'User',
         key: 'id'
       },
@@ -37,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
     replyId:{
       allowNull:true,
       type: DataTypes.INTEGER,
-      reference:{
+      references:{
         model: 'Message',
         key: 'id'
       },

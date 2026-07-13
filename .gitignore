@@ -5,3 +5,4 @@ client/.env
 server/.env
 
 sever/src/files/
+server/dist/

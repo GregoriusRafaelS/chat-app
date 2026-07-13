@@ -1,12 +1,14 @@
 import {Request, Response} from "express"
+import db from "../models/index";
+import { superEnkripsi, superDekripsi, encryptAES, decryptAES, encryptImage, decryptImage } from "./script"
+
 require('dotenv').config();
-const {User, Conversation, Message} = require('../models');
-const { superEnkripsi, superDekripsi, encryptAES, decryptAES, encryptImage, decryptImage } = require("./script")
+const {User, Message} = db
 
 const allMessages = async (req: Request, res: Response) => {
-    try {
-      const { convId, profilePicture } = req.params; 
-      const messages = await Message.findAll({
+  try {
+    const { convId, profilePicture } = req.params; 
+    const messages = await Message.findAll({
         where: {
           conversationId: convId,
         },

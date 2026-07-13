@@ -1,20 +1,22 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
 
     "rootDir": "./src",
     "outDir": "./dist",
 
     "strict": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
 
     "types": ["node"],
 
-    "skipLibCheck": true,
-    "typeRoots": ["./node_modules/@types", "./src/types"],
     "allowJs": true,
     "checkJs": false,
+
+    "skipLibCheck": true
   },
-    "include": ["src/**/*"]
+  "include": ["src/**/*", "test.ts"]
 }

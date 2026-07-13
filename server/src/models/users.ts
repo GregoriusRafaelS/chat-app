@@ -1,17 +1,21 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+import { Model, Sequelize, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "sequelize";
 
-module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
+export default (sequelize: Sequelize) => {
+  class User extends Model<InferAttributes<User>, InferCreationAttributes<User>>{
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
-      // define association here
+    declare id: CreationOptional<number>;
+    declare fullName: string;
+    declare profilePicture: Text | null;
+    declare email: string;
+    declare password: string;
+    declare verified: boolean;
+
+    static associate(models: any) {
+    // define association here
     User.belongsToMany(models.Conversation, {
       through: models.ConversationParticipation,
       foreignKey: 'userId',
@@ -22,6 +26,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   User.init({
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     fullName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -48,3 +57,4 @@ module.exports = (sequelize, DataTypes) => {
   });
   return User;
 };
+
