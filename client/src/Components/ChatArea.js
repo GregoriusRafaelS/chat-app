@@ -21,11 +21,14 @@ function ChatArea() {
   let token;
   if(userData) token = userData.data.token
 
+  socket.emit("join-conversation", convId);
+
   const sendMessage = async () => {
     const filePath = file ? file.path : null;
     socket.emit("send-message", {
       name:"",
       senderId: userData.data.currentUser.id,
+      convId: convId,
       content: messageContent,
       mediaUrl: filePath,
       createdAt: new Date(),

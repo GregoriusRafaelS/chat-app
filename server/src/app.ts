@@ -24,9 +24,11 @@ app.use(
 
 io.on("connection", (socket: Socket) => {
   console.log("User Connected");
-  socket.on("send-message", (message: string) => {
-    console.log(message)
-    io.emit("receive-message", message)
+  socket.on("join-conversation", (convId: number) => {
+    socket.join(`conversation-${convId}`)
+  })
+  socket.on("send-message", ({convId, senderId, content, mediaUrl, createdAt}) => {
+    io.to(`conversation-${convId}`).emit("receive-message", {conversationId: convId, content: content, senderId: senderId, mediaUrl: mediaUrl, createdAt: createdAt });
   });
 });
 
