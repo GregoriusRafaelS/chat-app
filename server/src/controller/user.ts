@@ -75,10 +75,7 @@ const registerUser = async(req: Request,res: Response, next: NextFunction)=>{
     });
     
   } catch (error: any) {
-    res.status(error.statusCode || 500).json({
-      status: "Error",
-      message: error.message
-    })
+    next(error);
   }
 };
 
@@ -121,10 +118,7 @@ const loginHandler = async (req: Request, res: Response, next: NextFunction)=>{
     })
 
   } catch (error: any) {
-    res.status(error.statusCode || 500).json({
-      status: "errorr",
-      message: error.message
-    })
+    next(error);
   }
 }
 
@@ -146,8 +140,8 @@ const getUserByToken = async(req: Request,res: Response,next: NextFunction)=>{
     });
 
   res.json(user);
-  } catch (err: any) {
-    return res.status(500).json({msg: err.message});
+  } catch (error: any) {
+    next(error);
   }
 }
 

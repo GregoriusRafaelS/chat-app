@@ -33,10 +33,15 @@ io.on("connection", (socket: Socket) => {
 import userRouter from "./routes/user";
 import conversationRouter from "./routes/conversation";
 import messageRouter from "./routes/message";
+import customErrorHandler from "./middleware/customErrorHandler";
+import notFoundHandler from "./middleware/notFoundHandler";
 
 app.use(userRouter);
 app.use(conversationRouter);
 app.use(messageRouter);
+
+app.use(customErrorHandler);
+app.use(notFoundHandler);
 
 const PORT = process.env.PORT;
 

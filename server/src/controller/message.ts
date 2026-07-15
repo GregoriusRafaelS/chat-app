@@ -1,11 +1,11 @@
-import {Request, Response} from "express"
+import {NextFunction, Request, Response} from "express"
 import db from "../models/index";
 import { superEnkripsi, superDekripsi, encryptAES, decryptAES, encryptImage, decryptImage } from "./script"
 
 require('dotenv').config();
 const {User, Message} = db
 
-const allMessages = async (req: Request, res: Response) => {
+const allMessages = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { convId, profilePicture } = req.params; 
     const messages = await Message.findAll({
@@ -34,11 +34,11 @@ const allMessages = async (req: Request, res: Response) => {
       }
       res.status(200).json(messages);
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
+      next(error);
     }
   }
 
-const sendMessage = async (req: Request, res: Response) => {
+const sendMessage = async (req: Request, res: Response, next: NextFunction) => {
     const { messageContent, convId, file} = req.body;
     if (!messageContent || !convId) {
       console.log("Invalid data passed into request");
@@ -69,7 +69,7 @@ const sendMessage = async (req: Request, res: Response) => {
       
       res.status(200).json({ message: 'Message sent successfully'});
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
+      next(error)
     }
   }
 

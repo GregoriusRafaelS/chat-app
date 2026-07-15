@@ -1,10 +1,10 @@
 import { Op,literal } from "sequelize";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import db from "../models/index";
 const {Conversation, ConversationParticipation, User, Message} = db
 const { superDekripsi } = require('./script');
 
-const addConversation = async (req: Request, res: Response) => {
+const addConversation = async (req: Request, res: Response, next: NextFunction) => {
   const {userId} = req.body;
   
   if (!userId) {
@@ -55,15 +55,14 @@ const addConversation = async (req: Request, res: Response) => {
         role: 'Member'
       }
     ])
-    
+    console.log(conversationId)
     res.status(200).json(conversationId);
   } catch (error: any) {
-    console.log(error);
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 };
 
-let fetchConversation = async (req: Request, res: Response) => {
+let fetchConversation = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const keyword = req.query.searchTerm;
     const searchCriteria = keyword ? {
@@ -146,12 +145,11 @@ let fetchConversation = async (req: Request, res: Response) => {
 
     res.status(200).json(conversations);
   } catch (error: any) {
-    console.log(error)
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 };
 
-const fetchGroup = async (req: Request, res: Response) => {
+const fetchGroup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const allGroups = await Conversation.findAll({
       where:{
@@ -160,8 +158,7 @@ const fetchGroup = async (req: Request, res: Response) => {
     });
     res.status(200).json(allGroups);
   } catch (error: any) {
-    res.status(400);
-    throw new Error(error.message);
+    next(error);
   }
 }
 
