@@ -26,7 +26,7 @@ function ChatArea() {
   const sendMessage = async () => {
     const filePath = file ? file.path : null;
 
-    // if(messageContent.length === 0 && filePath === null) return
+    if(messageContent.length === 0 && filePath === null) return
     
     socket.emit("send-message", {
       name:"",
