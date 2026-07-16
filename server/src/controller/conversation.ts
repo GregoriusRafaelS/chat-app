@@ -6,7 +6,7 @@ const { superDekripsi } = require('./script');
 
 const addConversation = async (req: Request, res: Response, next: NextFunction) => {
   const {userId} = req.body;
-  
+
   if (!userId) {
     console.log("UserId param not sent with request");
     return res.sendStatus(400);
@@ -34,7 +34,7 @@ const addConversation = async (req: Request, res: Response, next: NextFunction) 
     }
     
     const conversationData = {
-      name: null,
+      name: "-",
       type: 'Personal',
       profilePicture: null
     };
@@ -56,7 +56,7 @@ const addConversation = async (req: Request, res: Response, next: NextFunction) 
       }
     ])
     console.log(conversationId)
-    res.status(200).json(conversationId);
+    res.status(200).json({id: conversationId});
   } catch (error: any) {
     next(error);
   }
