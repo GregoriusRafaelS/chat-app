@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 dotenv.config();
 import { NextFunction, Request, Response } from "express";
 import db from "../models/index";
-import generateToken from "../middleware/generateToken";
+import generateToken from "../util/generateToken";
 import { Op } from "sequelize";
 import { UserPayload } from "../types/express";
 const {User} = db;
