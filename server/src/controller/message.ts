@@ -26,7 +26,7 @@ const allMessages = async (req: Request, res: Response, next: NextFunction) => {
           message.dataValues.content = superDekripsi(message.dataValues.content, 4, true);
           if(message.dataValues.mediaUrl){
             message.dataValues.mediaUrl = decryptAES(message.dataValues.mediaUrl);
-            decryptImage(message.dataValues.mediaUrl);
+            decryptImage(`${message.dataValues.mediaUrl}`);
             const separatedPath = message.dataValues.mediaUrl.split('.');
             message.dataValues.mediaUrl = `${separatedPath[0]}-decrypt-image.${separatedPath[1]}`
           }
@@ -40,7 +40,7 @@ const allMessages = async (req: Request, res: Response, next: NextFunction) => {
 
 const sendMessage = async (req: Request, res: Response, next: NextFunction) => {
     const { messageContent, convId, file} = req.body;
-    if (!messageContent || !convId) {
+    if ((!messageContent && !req.file) || !convId) {
       console.log("Invalid data passed into request");
       return res.sendStatus(400);
     }
@@ -52,7 +52,7 @@ const sendMessage = async (req: Request, res: Response, next: NextFunction) => {
       if(req.file){
         filePathFix = encryptAES(req.file.path)
         const separatedPath = req.file.path.split('\\');
-        encryptImage(separatedPath[1]);
+        encryptImage(separatedPath[2]);
       }else{
         filePathFix = null
       }
@@ -64,7 +64,6 @@ const sendMessage = async (req: Request, res: Response, next: NextFunction) => {
         content: contentEnkrip,
         mediaUrl: filePathFix
       };
-      
       const message = await Message.create(newMessage);
       
       res.status(200).json({ message: 'Message sent successfully'});

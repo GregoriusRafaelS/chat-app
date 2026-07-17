@@ -75,7 +75,7 @@ const encryptImage = (fileName: string) => {
 
 const decryptImage = (fileName: string) => {
   const separatedPath1 = fileName.split('\\');
-  const separatedPath2 = separatedPath1[1].split('.');
+  const separatedPath2 = separatedPath1[2].split('.');
   const encryptedHex = fs.readFileSync(path.resolve(__dirname, `../files/${separatedPath2[0]}.txt`), 'utf-8');
   const encryptedBuffer = Buffer.from(encryptedHex, 'hex');
   const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);

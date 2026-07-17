@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io"
+import path from "path";
 
 const app = express();
 const httpServer = createServer(app);
@@ -38,6 +39,7 @@ import messageRouter from "./routes/message";
 import customErrorHandler from "./middleware/customErrorHandler";
 import notFoundHandler from "./middleware/notFoundHandler";
 
+app.use('/', express.static(path.join(process.cwd(), 'src', 'files')));
 app.use(userRouter);
 app.use(conversationRouter);
 app.use(messageRouter);

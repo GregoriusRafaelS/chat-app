@@ -4,7 +4,7 @@ import { encryptAES } from "../controller/script"
 
 const storage = multer.diskStorage({
   destination: function(req: Request, file: Express.Multer.File, cb: (error: Error | null, fileName: string) => void){   
-    cb(null, 'files');
+    cb(null, 'src/files');
   },
   filename: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, fileName: string)=>void) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
