@@ -186,6 +186,7 @@ function ChatArea() {
               onClick={() => {
                 sendMessage();
                 setMessageContent("");
+                setFile(null);
               }}
             >
               <SendIcon />
