@@ -36,10 +36,8 @@ function CreateGroup() {
   const addGroup = async()=>{
     const formData = new FormData();
     formData.append('name', nameGroup )
-    formData.append('users', addedUsers )
+    formData.append('users', JSON.stringify([...addedUsers]) )
     formData.append('image', file )
-    console.log(file.size)
-    console.log(file.path)
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,

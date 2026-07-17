@@ -165,15 +165,14 @@ const fetchGroup = async (req: Request, res: Response, next: NextFunction) => {
 
 const createGroupChat = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name, users } = req.body
+    const { name } = req.body
+    const users = JSON.parse(req.body.users)
 
       let filePathFix;
-      console.log("GDGDGDGDG")
       if(req.file){
-        console.log("GDGDGDGDG")
         filePathFix = encryptAES(req.file.path)
         const separatedPath = req.file.path.split('\\');
-        encryptImage(separatedPath[1]);
+        encryptImage(separatedPath[2]);
       }else{
         filePathFix = null
       }
@@ -186,7 +185,7 @@ const createGroupChat = async (req: Request, res: Response, next: NextFunction) 
 
     const newConversation = await Conversation.create(conversationData)
     const conversationId = newConversation.id
-
+    console.log(users[0].id)
     users.map(async (user: any) => {
       await ConversationParticipation.create({
         conversationId: conversationId,
