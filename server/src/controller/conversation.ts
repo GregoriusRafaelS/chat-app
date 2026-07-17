@@ -1,6 +1,7 @@
 import { Op,literal } from "sequelize";
 import { NextFunction, Request, Response } from "express";
 import db from "../models/index";
+import { encryptAES, encryptImage } from "./script";
 const {Conversation, ConversationParticipation, User, Message} = db
 const { superDekripsi } = require('./script');
 
@@ -162,7 +163,51 @@ const fetchGroup = async (req: Request, res: Response, next: NextFunction) => {
   }
 }
 
-const createGroupChat = async (req: Request, res: Response) => {
+const createGroupChat = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { name, users } = req.body
+
+      let filePathFix;
+      console.log("GDGDGDGDG")
+      if(req.file){
+        console.log("GDGDGDGDG")
+        filePathFix = encryptAES(req.file.path)
+        const separatedPath = req.file.path.split('\\');
+        encryptImage(separatedPath[1]);
+      }else{
+        filePathFix = null
+      }
+
+    const conversationData = {
+      name: name,
+      type: "group",
+      profilePicture: filePathFix || null
+    }
+
+    const newConversation = await Conversation.create(conversationData)
+    const conversationId = newConversation.id
+
+    users.map(async (user: any) => {
+      await ConversationParticipation.create({
+        conversationId: conversationId,
+        userId: user.id,
+        role: "Member"
+      })
+    });
+
+    await ConversationParticipation.bulkCreate([
+      {
+        conversationId: conversationId,
+        userId: req.user?.userId,
+        role: "Admin"
+      },
+    ])
+
+    console.log(conversationId);
+    res.status(200).json({id: conversationId, nameConversation: name});
+  } catch (error: any) {
+    next(error)
+  }
 }
 
 const exitGroup = async (req: Request, res: Response) => {

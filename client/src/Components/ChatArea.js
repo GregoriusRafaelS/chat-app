@@ -28,17 +28,17 @@ function ChatArea() {
 
     if(messageContent.length === 0 && filePath === null) return
     
-    socket.emit("send-message", {
-      name:"",
-      senderId: userData.data.currentUser.id,
-      convId: convId,
-      content: messageContent,
-      mediaUrl: filePath,
-      createdAt: new Date(),
-      User:{
-        fullName: userData.data.currentUser.fullName
-      }
-    })
+    // socket.emit("send-message", {
+    //   name:"",
+    //   senderId: userData.data.currentUser.id,
+    //   convId: convId,
+    //   content: messageContent,
+    //   mediaUrl: filePath,
+    //   createdAt: new Date(),
+    //   User:{
+    //     fullName: userData.data.currentUser.fullName
+    //   }
+    // })
 
     const config = {
       headers: {
@@ -165,42 +165,42 @@ function ChatArea() {
             })}
         </div>
         <div className="BOTTOM" />
-        <div className="text-input-area">
-        <label className="file-input-label">
-          <input
-            className='file-input'
-            type="file"
-            onChange={(e) => {
-              setFile(e.target.files[0]);
-            }}
+          <div className="text-input-area">
+            <label className="file-input-label">
+              <input
+                className='file-input'
+                type="file"
+                onChange={(e) => {
+                  setFile(e.target.files[0]);
+                }}
+              />
+              <div className="attach-icon">
+                <AttachFileIcon />
+              </div>
+            </label>
+            <input
+              placeholder="Type a Message"
+              className="search-box"
+              value={messageContent}
+              onChange={(e) => {
+                setMessageContent(e.target.value);
+              }}
+              onKeyDown={(event) => {
+                if (event.code === "Enter") {
+                  sendMessage();
+                  setMessageContent("");
+                }
+              }}
             />
-        <div className="attach-icon">
-          <AttachFileIcon />
-        </div>
-        </label>
-          <input
-            placeholder="Type a Message"
-            className="search-box"
-            value={messageContent}
-            onChange={(e) => {
-              setMessageContent(e.target.value);
-            }}
-            onKeyDown={(event) => {
-              if (event.code === "Enter") {
+            <IconButton
+              className="icon"
+              onClick={() => {
                 sendMessage();
                 setMessageContent("");
-              }
-            }}
-          />
-          <IconButton
-            className="icon"
-            onClick={() => {
-              sendMessage();
-              setMessageContent("");
-            }}
-          >
-            <SendIcon />
-          </IconButton>
+              }}
+            >
+              <SendIcon />
+            </IconButton>
         </div>
       </div>
     );
