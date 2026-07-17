@@ -99,9 +99,11 @@ function Sidebar() {
 
       <div className="sb-conversation">
         {conversations.map((conversation, index) => {
-          // if (conversation.length === 1) {
-          //   return <div key={index}></div>;
-          // }
+          console.log("conversation", conversation);
+          console.log("conversation", conversation.fullName);
+          if (conversation.length === 0) {
+            return <div key={index}></div>;
+          }
           
           return (
             <div

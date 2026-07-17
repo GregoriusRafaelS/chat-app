@@ -28,18 +28,6 @@ function ChatArea() {
 
     if(messageContent.length === 0 && filePath === null) return
     
-    // socket.emit("send-message", {
-    //   name:"",
-    //   senderId: userData.data.currentUser.id,
-    //   convId: convId,
-    //   content: messageContent,
-    //   mediaUrl: filePath,
-    //   createdAt: new Date(),
-    //   User:{
-    //     fullName: userData.data.currentUser.fullName
-    //   }
-    // })
-
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -51,6 +39,7 @@ function ChatArea() {
     formData.append('messageContent', messageContent);
     formData.append('convId', convId);
     formData.append('image', file);
+    formData.append('fullName', fullName);
 
     const message = formData.get('messageContent');
     const image = formData.get('image');

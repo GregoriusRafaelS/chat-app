@@ -131,16 +131,21 @@ let fetchConversation = async (req: Request, res: Response, next: NextFunction) 
 
     conversations = conversations.map((conv: any) => {
       if (conv.type === 'Personal') {
-        if(conv.Messages[0]) superDekripsi(conv.Messages[0].dataValues.content, 4, true)
-          return {
+        return {
           conversationId: conv.id,
           fullName: conv.Users[0].dataValues.fullName,
-          profilePicture: conv.Users[0].dataValues.profilePicture,
-          messages: conv.Messages[0].dataValues.content,
+          profilePicture: conv.Users[0].dataValues.profilePicture || null,
+          messages: conv.Messages[0].dataValues.content ? superDekripsi(conv.Messages[0].dataValues.content, 4, true) : null,
           updatedAt: conv.Messages[0].dataValues.updatedAt
         };
       } else {
-        return conv;
+        return {
+          conversationId: conv.id,
+          fullName: conv.name, 
+          profilePicture: conv.profilePicture,
+          messages: conv.Messages[0].dataValues.content ? superDekripsi(conv.Messages[0].dataValues.content, 4, true) : null,
+          updatedAt: conv.Messages[0].dataValues.updatedAt
+        };
       }
     }).filter((conv: any) => conv !== null);
 

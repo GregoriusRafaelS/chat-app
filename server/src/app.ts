@@ -3,6 +3,7 @@ require('dotenv').config();
 import express from "express";
 
 import cors from "cors";
+import { initIo } from "./util/socket";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io"
 import path from "path";
@@ -23,14 +24,13 @@ app.use(
   })
 );
 
+initIo(io);
+
 io.on("connection", (socket: Socket) => {
   console.log("User Connected");
   socket.on("join-conversation", (convId: number) => {
     socket.join(`conversation-${convId}`)
   })
-  socket.on("send-message", ({convId, senderId, content, mediaUrl, createdAt}) => {
-    io.to(`conversation-${convId}`).emit("receive-message", {conversationId: convId, content: content, senderId: senderId, mediaUrl: mediaUrl, createdAt: createdAt });
-  });
 });
 
 import userRouter from "./routes/user";

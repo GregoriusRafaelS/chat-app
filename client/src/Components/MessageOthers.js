@@ -12,7 +12,7 @@ function MessageOthers({props}) {
         <p className='con-icon'>{props.name[0]}</p>
         <div className='other-text-content'>
           <p className='con-title'>{props.name}</p>
-          {media && <img style={{ maxHeight: '250px', maxWidth: '250px' }} src={`${beURL}/${files[1]}`} alt="Media" />}        
+          {media && <img style={{ maxHeight: '250px', maxWidth: '250px' }} src={`${beURL}/${files[2]}`} alt="Media" />}        
           <p className='con-message'>{props.content}</p>
           <p className='self-timeStamp'>{new Date(props.createdAt).toLocaleString('id-ID')}</p>
         </div>
